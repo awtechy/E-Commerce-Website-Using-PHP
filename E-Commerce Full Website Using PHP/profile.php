@@ -1,6 +1,5 @@
-<?php include ( "inc/connect.inc.php" ); ?>
 <?php 
-
+include ( "inc/connect.inc.php" ); 
 ob_start();
 session_start();
 if (!isset($_SESSION['user_login'])) {
@@ -8,8 +7,11 @@ if (!isset($_SESSION['user_login'])) {
 }
 else {
 	$user = $_SESSION['user_login'];
-	$result = mysql_query("SELECT * FROM user WHERE id='$user'");
-		$get_user_email = mysql_fetch_assoc($result);
+	$sql = $conn->prepare("SELECT * FROM user WHERE id=?");
+        $sql->bind_param("s", $user); 
+	$sql->execute(); 
+	$result = $sql->get_result();
+		$get_user_email = $result->fetch_assoc();
 			$uname_db = $get_user_email['firstName'];
 			$uemail_db = $get_user_email['email'];
 
@@ -19,7 +21,7 @@ else {
 
 if (isset($_REQUEST['uid'])) {
 	
-	$user2 = mysql_real_escape_string($_REQUEST['uid']);
+	$user2 = $conn->real_escape_string($_REQUEST['uid']);
 	if($user != $user2){
 		header('location: index.php');
 	}
@@ -134,9 +136,9 @@ $search_value = "";
 										$dstatus = $row['dstatus'];
 										
 										//get product info
-										$query1 = "SELECT * FROM products WHERE id='$pid'";
-										$run1 = mysql_query($query1);
-										$row1=mysql_fetch_assoc($run1);
+										$query1 = "SELECT * FROM products WHERE id=?";
+										$stmt = $conn->prepare($query); $stmt->bind_param("s", $pid); $stmt->execute(); $run1 = $stmt->get_result();
+										$row1=$run1->fetch_assoc();
 										$pId = $row1['id'];
 										$pName = substr($row1['pName'], 0,50);
 										$price = $row1['price'];
